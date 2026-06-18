@@ -24,6 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: ppv_backend
     restart: unless-stopped
+    command: sh -c "npm install --omit=dev && node --watch src/index.js"
     environment:
       PORT: 4000
       DB_HOST: db
@@ -33,6 +34,9 @@ services:
       DB_NAME: tasks_db
     ports:
       - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
     depends_on:
       db:
         condition: service_healthy
@@ -72,6 +76,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:80"
+    volumes:
+      - ./frontend/index.html:/usr/share/nginx/html/index.html:ro
+      - ./frontend/page2.html:/usr/share/nginx/html/page2.html:ro
+      - ./ppv.png:/usr/share/nginx/html/ppv.png:ro
     depends_on:
       - backend
       - ollama
@@ -79,3 +87,4 @@ services:
 volumes:
   postgres_data:
   ollama_data:
+  backend_node_modules:
