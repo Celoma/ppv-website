@@ -3,44 +3,455 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index</title>
+    <title>Connexion</title>
     <style>
+      :root {
+        color-scheme: light;
+        --bg: #ffffff;
+        --bg-soft: #cecece;
+        --card: rgba(255, 255, 255, 0.96);
+        --card-dark: rgba(10, 18, 35, 0.75);
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #F7B32B;
+        --accent-dark: #F72C25;
+        --accent-soft: #fef3c7;
+        --success: #0f766e;
+        --error: #b91c1c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.30), transparent 34%),
+          radial-gradient(circle at bottom right, rgba(200, 218, 255, 0.30), transparent 28%),
+          linear-gradient(135deg, var(--bg), var(--bg-soft));
+        color: #e2e8f0;
         display: grid;
         place-items: center;
-        font-family: sans-serif;
-        background: #f4f6f8;
+        padding: 24px;
       }
+
       .card {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        text-align: center;
+        width: min(960px, 90vw);
+        height: min(625px, 90vh);
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        overflow: hidden;
+        border-radius: 18px;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.45);
+        background: rgba(15, 23, 42, 0.18);
+        backdrop-filter: blur(18px);
       }
-      a {
-        display: inline-block;
-        margin-top: 1rem;
-        text-decoration: none;
+
+      .hero,
+      .panel {
+        padding: 36px;
+      }
+
+      .hero {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
+        color: #f8fafc;
+        background:#2f3f8d;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff7ed;
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 4vw, 4rem);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .hero p,
+      .panel p {
+        line-height: 1.6;
+      }
+
+      .lead {
+        max-width: 52ch;
+        color: #e2e8f0;
+        font-size: 1.05rem;
+      }
+
+      .panel {
+        background: var(--card);
+        color: var(--text);
+      }
+
+      .section-title {
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+      }
+
+      .section-subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .panel-group {
+        display: grid;
+        gap: 18px;
+      }
+
+      .slider-switch {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding: 6px;
+        border-radius: 18px;
+        background: #e2e8f0;
+        border: 1px solid #cbd5e1;
+      }
+
+      .slider-thumb {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: calc(50% - 6px);
+        height: calc(100% - 12px);
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+        transform: translateX(0);
+        transition: transform 220ms ease;
+      }
+
+      .slider-switch[data-view='signup'] .slider-thumb {
+        transform: translateX(100%);
+      }
+
+      .slider-option {
+        position: relative;
+        z-index: 1;
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 14px;
+        text-align: center;
+        font-weight: 700;
+        color: #334155;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .slider-switch[data-view='login'] .slider-option[data-target='login'],
+      .slider-switch[data-view='signup'] .slider-option[data-target='signup'] {
         color: white;
-        background: #0b6efd;
-        padding: 0.7rem 1rem;
-        border-radius: 8px;
+      }
+
+      .panel-block {
+        padding: 18px;
+        border-radius: 20px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font: inherit;
+        background: #fff;
+      }
+
+      input:focus {
+        outline: 3px solid rgba(37, 99, 235, 0.18);
+        border-color: var(--accent);
+      }
+
+      button {
+        border: 0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        color: white;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28);
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.75;
+      }
+
+      .hint,
+      .status {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .status {
+        min-height: 1.4em;
+        font-weight: 600;
+      }
+
+      .status.success {
+        color: var(--success);
+      }
+
+      .status.error {
+        color: var(--error);
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .secondary-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        color: #111827;
+        background: var(--accent-soft);
+      }
+
+      .ghost-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        color: #e2e8f0;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      @media (max-width: 820px) {
+        .card {
+          grid-template-columns: 1fr;
+        }
+
+        .hero,
+        .panel {
+          padding: 28px;
+        }
       }
     </style>
     <script>
-      setTimeout(function () {
-        window.location.href = './page2.html';
-      }, 3000);
+      const apiUrl = 'http://localhost:4000/api';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('#login-form');
+        const signupForm = document.querySelector('#signup-form');
+        const status = document.querySelector('#status');
+        const signupStatus = document.querySelector('#signup-status');
+        const submitButton = document.querySelector('#submit-button');
+        const signupButton = document.querySelector('#signup-button');
+        const authToggle = document.querySelector('#auth-toggle');
+        const loginPanel = document.querySelector('#login-panel');
+        const signupPanel = document.querySelector('#signup-panel');
+
+        function setView(view) {
+          authToggle.dataset.view = view;
+          loginPanel.hidden = view !== 'login';
+          signupPanel.hidden = view !== 'signup';
+          status.textContent = '';
+          signupStatus.textContent = '';
+        }
+
+        setView('login');
+
+        authToggle.addEventListener('click', (event) => {
+          const button = event.target.closest('[data-target]');
+          if (!button) {
+            return;
+          }
+
+          setView(button.dataset.target);
+        });
+
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          status.className = 'status';
+          status.textContent = 'Connexion en cours...';
+          submitButton.disabled = true;
+
+          const formData = new FormData(form);
+          const payload = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`${apiUrl}/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || 'Connexion impossible');
+            }
+
+            window.location.href = './page2.html';
+          } catch (error) {
+            status.className = 'status error';
+            status.textContent = error.message;
+          } finally {
+            submitButton.disabled = false;
+          }
+        });
+
+        signupForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          signupStatus.className = 'status';
+          signupStatus.textContent = 'Création du compte en cours...';
+          signupButton.disabled = true;
+
+          const formData = new FormData(signupForm);
+          const payload = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`${apiUrl}/users`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || 'Création impossible');
+            }
+
+            window.location.href = './page2.html';
+          } catch (error) {
+            signupStatus.className = 'status error';
+            signupStatus.textContent = error.message;
+          } finally {
+            signupButton.disabled = false;
+          }
+        });
+      });
     </script>
   </head>
   <body>
     <main class="card">
-      <h1>Page index</h1>
-      <p>Redirection automatique vers la deuxième page dans 3 secondes.</p>
-      <a href="./page2.html">Aller maintenant</a>
+      <section class="hero">
+        <span class="eyebrow">Ping Pong Vincien (PPV)</span>
+        <div>
+          <h1>Ping Pong Vincien</h1>
+          <p class="lead">
+            Le PPV est un jeu de gentleman créé à Sup de Vinci en avril 2026. Cette page permet de se connecter ou de créer un compte pour accéder au règlement et aux différentes informations du PPV.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-group">
+          <div id="auth-toggle" class="slider-switch" data-view="login" role="tablist" aria-label="Choix du formulaire">
+            <div class="slider-thumb" aria-hidden="true"></div>
+            <button class="slider-option" type="button" data-target="login" role="tab" aria-selected="true">
+              Connexion
+            </button>
+            <button class="slider-option" type="button" data-target="signup" role="tab" aria-selected="false">
+              Inscription
+            </button>
+          </div>
+
+          <div class="panel-block" id="login-panel">
+            <h2 class="section-title">Se connecter</h2>
+            <p class="section-subtitle">
+              Utilise un compte existant pour accéder immédiatement au règlement et bien plus encore !
+            </p>
+
+            <form id="login-form">
+              <label>
+                Email
+                <input name="email" type="email" placeholder="alice@example.com" autocomplete="email" required />
+              </label>
+
+              <label>
+                Mot de passe
+                <input name="password" type="password" placeholder="password123" autocomplete="current-password" required />
+              </label>
+
+              <button id="submit-button" type="submit">Se connecter</button>
+            </form>
+
+            <p id="status" class="status" aria-live="polite"></p>
+          </div>
+
+          <div class="panel-block" id="signup-panel" hidden>
+            <h2 class="section-title">Créer un compte</h2>
+            <p class="section-subtitle">
+              Crée un compte pour rejoindre le PPV et accéder au règlement.
+            </p>
+
+            <form id="signup-form">
+              <label>
+                Nom
+                <input name="name" type="text" placeholder="Nathael Martinelle" autocomplete="name" required />
+              </label>
+
+              <label>
+                Email
+                <input name="email" type="email" placeholder="nouveau@exemple.com" autocomplete="email" required />
+              </label>
+
+              <label>
+                Mot de passe
+                <input name="password" type="password" placeholder="Choisis un mot de passe" autocomplete="new-password" required />
+              </label>
+
+              <button id="signup-button" type="submit">Créer le compte</button>
+            </form>
+
+            <p id="signup-status" class="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
     </main>
   </body>
 </html>
