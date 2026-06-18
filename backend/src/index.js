@@ -4,6 +4,7 @@ const { pool } = require('./db');
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
+const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 
 app.use(cors());
 app.use(express.json());
@@ -79,6 +80,49 @@ app.post('/api/login', async (req, res) => {
     return res.json({ user: result.rows[0] });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/ollama/chat', async (req, res) => {
+  const { model, messages, stream = false } = req.body || {};
+
+  if (!model || typeof model !== 'string') {
+    return res.status(400).json({ message: 'model is required' });
+  }
+
+  if (!Array.isArray(messages)) {
+    return res.status(400).json({ message: 'messages must be an array' });
+  }
+  console.log(`Sending request to Ollama: model=${model}, messages=${JSON.stringify(messages)}, stream=${stream}`);
+
+  try {
+    const response = await fetch(`${ollamaBaseUrl}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: Boolean(stream)
+      })
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        message: responseText || 'Impossible de joindre Ollama'
+      });
+    }
+
+    if (!responseText.trim()) {
+      return res.status(502).json({ message: 'Réponse vide reçue depuis Ollama' });
+    }
+
+    return res.type('json').send(responseText);
+  } catch (error) {
+    return res.status(502).json({ message: error.message });
   }
 });
 

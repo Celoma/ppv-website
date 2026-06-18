@@ -340,7 +340,7 @@
                 <span class="spinner" aria-hidden="true"></span>
                 <span>Recherche de la réponse en cours...</span>
               </div>
-              <div id="status" class="status">Connexion à Ollama via le proxy /ollama/api/chat</div>
+              <div id="status" class="status">Connexion à Ollama via le backend /api/ollama/chat</div>
             </div>
           </form>
         </article>
@@ -357,8 +357,9 @@
       const sendButton = document.getElementById('send-button');
 
       const conversation = [];
-      const contextFiles = ['./ppv-context.txt'];
-      let systemContext = 'Tu es l\'assistant officiel du PPV. Réponds en français, de manière claire, précise et utile. Si une information n\'est pas présente dans le règlement, indique que tu ne peux pas la confirmer.';
+      const contextFiles = ['./content/ppv-rules.txt', './content/ppv-context.txt'];
+      const apiBaseUrl = window.location.port === '5500' ? 'http://localhost:4000' : '';
+      let systemContext = '';
 
       function setLoading(isLoading) {
         loadingEl.hidden = !isLoading;
@@ -415,7 +416,7 @@
       }
 
       async function askOllama(question) {
-        const response = await fetch('/ollama/api/chat', {
+        const response = await fetch(`${apiBaseUrl}/api/ollama/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
