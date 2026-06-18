@@ -13,6 +13,7 @@ Conteneuriser une application full-stack avec:
 - Dockerfile backend
 - Dockerfile frontend
 - `docker-compose.yml`
+- Service Ollama avec volume persistant
 - Kanban https://supdevinci-edu-ppv.atlassian.net/jira/software/projects/SCRUM/boards/1
 
 ## Prerequis
@@ -32,6 +33,7 @@ docker compose up --build
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000/api/users
 - PostgreSQL: localhost:5432
+- Ollama: http://localhost:11434
 
 ## Arrêt
 ```bash
