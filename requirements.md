@@ -30,7 +30,7 @@ docker compose up --build
 
 ## URLs
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:4000/api/tasks
+- Backend API: http://localhost:4000/api/users
 - PostgreSQL: localhost:5432
 
 ## Arrêt
