@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: sans-serif;
+        background: #f4f6f8;
+      }
+      .card {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
+      a {
+        display: inline-block;
+        margin-top: 1rem;
+        text-decoration: none;
+        color: white;
+        background: #0b6efd;
+        padding: 0.7rem 1rem;
+        border-radius: 8px;
+      }
+    </style>
+    <script>
+      setTimeout(function () {
+        window.location.href = './page2.html';
+      }, 3000);
+    </script>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Page index</h1>
+      <p>Redirection automatique vers la deuxième page dans 3 secondes.</p>
+      <a href="./page2.html">Aller maintenant</a>
+    </main>
+  </body>
+</html>
