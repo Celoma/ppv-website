@@ -3,33 +3,488 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Page 2</title>
+    <title>PPV - Règles et assistant</title>
     <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3efe8;
+        --panel: #ffffff;
+        --text: #18212f;
+        --muted: #667085;
+        --accent: #0f766e;
+        --accent-strong: #0b5f57;
+        --accent-soft: #e6f4f1;
+        --border: #dde3ea;
+        --shadow: 0 20px 50px rgba(16, 24, 40, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
-        display: grid;
-        place-items: center;
-        font-family: sans-serif;
-        background: #eef9f1;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
+          radial-gradient(circle at top right, rgba(15, 118, 110, 0.10), transparent 22%),
+          linear-gradient(180deg, #fcfcfb 0%, var(--bg) 100%);
       }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding: 28px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .hero {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 6px 2px;
+      }
+
+      .hero-copy {
+        display: grid;
+        gap: 10px;
+        max-width: 760px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.25rem);
+        line-height: 1.02;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.65;
+      }
+
+      .grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+        gap: 18px;
+        min-height: 0;
+      }
+
       .card {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 1.06rem;
+      }
+
+      .card p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 0;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      }
+
+      .button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+      }
+
+      .button:disabled {
+        cursor: progress;
+        opacity: 0.7;
+      }
+
+      .button.primary {
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      }
+
+      .button.secondary {
+        color: var(--text);
+        background: #f4f6f8;
+      }
+
+      .chat {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 0;
+      }
+
+      .messages {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 16px;
+        background: linear-gradient(180deg, #fbfbfc 0%, #f8fafb 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .message {
+        max-width: min(82%, 680px);
+        padding: 13px 15px;
+        border-radius: 16px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+      }
+
+      .message.user {
+        justify-self: end;
+        align-self: flex-end;
+        background: #dbeafe;
+      }
+
+      .message.assistant {
+        justify-self: start;
+        align-self: flex-start;
+        background: #ecfdf5;
+      }
+
+      .message.system {
+        align-self: center;
+        max-width: 100%;
+        background: #fff7e6;
+        color: #7a5b00;
         text-align: center;
       }
-      a {
-        color: #0b6efd;
+
+      .composer {
+        display: grid;
+        gap: 12px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 108px;
+        resize: vertical;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        padding: 14px 16px;
+        font: inherit;
+        line-height: 1.55;
+        color: var(--text);
+        background: #fff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: rgba(15, 118, 110, 0.45);
+        box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+      }
+
+      .footer-note {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .status-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 24px;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .status.error {
+        color: #b91c1c;
+      }
+
+      .loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid rgba(15, 118, 110, 0.2);
+        border-top-color: var(--accent);
+        animation: spin 0.8s linear infinite;
+        flex: 0 0 auto;
+      }
+
+      .muted-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .muted-link:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 16px 14px 20px;
+          gap: 16px;
+        }
+
+        .hero {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .hero-badge {
+          min-width: 0;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .card {
+          padding: 18px;
+          border-radius: 20px;
+        }
+
+        .messages {
+          min-height: 52vh;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="card">
-      <h1>Deuxième page</h1>
-      <p>La redirection a bien fonctionné.</p>
-      <a href="./index.html">Retour a l'index</a>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">PPV 2026</p>
+          <h1>Règlement officiel et assistant joueurs</h1>
+          <p>
+            Télécharge le règlement, puis pose une question à l'assistant. Les réponses s'appuient sur le contexte local du projet.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Règlement officiel</h2>
+          <p>
+            Le PDF original est disponible au téléchargement.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="./assets/REGLEMENT-OFFICIEL-PPV-2026.pdf" download>Télécharger le règlement</a>
+            <a class="button secondary" href="./index.html">Retour à l'index</a>
+          </div>
+        </article>
+
+        <article class="card chat">
+          <h2>Assistant PPV</h2>
+          <p id="assistant-description">Pose une question sur les règles, les coups spéciaux ou le déroulé d'une partie.</p>
+          <div id="messages" class="messages" aria-live="polite"></div>
+          <form id="chat-form" class="composer">
+            <textarea id="question" placeholder="Pose ici une question sur le règlement, les inscriptions, les règles, etc."></textarea>
+            <div class="actions">
+              <button class="button primary" type="submit" id="send-button">Envoyer</button>
+              <button class="button secondary" type="button" id="clear-chat">Réinitialiser</button>
+            </div>
+            <div class="status-row">
+              <div id="loading" class="loading" hidden>
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Recherche de la réponse en cours...</span>
+              </div>
+              <div id="status" class="status">Connexion à Ollama via le proxy /ollama/api/chat</div>
+            </div>
+          </form>
+        </article>
+      </section>
     </main>
+
+    <script>
+      const messagesEl = document.getElementById('messages');
+      const formEl = document.getElementById('chat-form');
+      const questionEl = document.getElementById('question');
+      const statusEl = document.getElementById('status');
+      const loadingEl = document.getElementById('loading');
+      const clearButton = document.getElementById('clear-chat');
+      const sendButton = document.getElementById('send-button');
+
+      const conversation = [];
+      const contextFiles = ['./ppv-context.txt'];
+      let systemContext = 'Tu es l\'assistant officiel du PPV. Réponds en français, de manière claire, précise et utile. Si une information n\'est pas présente dans le règlement, indique que tu ne peux pas la confirmer.';
+
+      function setLoading(isLoading) {
+        loadingEl.hidden = !isLoading;
+        sendButton.disabled = isLoading;
+        clearButton.disabled = isLoading;
+        questionEl.disabled = isLoading;
+      }
+
+      function insertNewLineAtCursor(textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+        textarea.value = `${value.slice(0, start)}\n${value.slice(end)}`;
+        const nextPosition = start + 1;
+        textarea.selectionStart = nextPosition;
+        textarea.selectionEnd = nextPosition;
+      }
+
+      function renderMessage(role, content) {
+        const message = document.createElement('div');
+        message.className = `message ${role}`;
+        message.textContent = content;
+        messagesEl.appendChild(message);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function setStatus(text, isError = false) {
+        statusEl.textContent = text;
+        statusEl.classList.toggle('error', isError);
+      }
+
+      async function loadContext() {
+        const parts = [];
+
+        for (const filePath of contextFiles) {
+          try {
+            const response = await fetch(filePath);
+            if (response.ok) {
+              const fileContext = await response.text();
+              if (fileContext.trim()) {
+                parts.push(fileContext.trim());
+              }
+            }
+          } catch (_error) {
+            // Ignore missing context files and keep the assistant usable.
+          }
+        }
+
+        if (parts.length > 0) {
+          systemContext = `${systemContext}\n\nContexte local:\n${parts.join('\n\n')}`;
+        } else {
+          setStatus('Contexte local indisponible, le chatbot fonctionne avec le prompt par défaut.', true);
+        }
+      }
+
+      async function askOllama(question) {
+        const response = await fetch('/ollama/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama3.2:1b',
+            stream: false,
+            messages: [
+              { role: 'system', content: systemContext },
+              ...conversation.slice(-6),
+              { role: 'user', content: question }
+            ]
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Impossible de joindre Ollama');
+        }
+
+        const data = await response.json();
+        return data.message?.content || 'Je n\'ai pas pu générer de réponse.';
+      }
+
+      clearButton.addEventListener('click', () => {
+        conversation.length = 0;
+        messagesEl.innerHTML = '';
+        setStatus('Conversation réinitialisée.');
+        questionEl.focus();
+      });
+
+      questionEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+          event.preventDefault();
+          insertNewLineAtCursor(questionEl);
+        }
+      });
+
+      formEl.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const question = questionEl.value.trim();
+        if (!question) {
+          return;
+        }
+
+        questionEl.value = '';
+        conversation.push({ role: 'user', content: question });
+        renderMessage('user', question);
+        setStatus('Réponse en cours...');
+        setLoading(true);
+
+        try {
+          const answer = await askOllama(question);
+          conversation.push({ role: 'assistant', content: answer });
+          renderMessage('assistant', answer);
+          setStatus('Réponse générée par Ollama.');
+        } catch (error) {
+          console.error(error);
+          renderMessage('assistant', 'Impossible de contacter Ollama pour le moment. Vérifie que le service est démarré, que le modèle est disponible et que le proxy fonctionne.');
+          setStatus('Erreur de connexion à Ollama.', true);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      loadContext().then(() => {
+        renderMessage('assistant', 'Bonjour, je peux t\'aider avec le règlement PPV. Pose ta question.');
+      });
+    </script>
   </body>
 </html>

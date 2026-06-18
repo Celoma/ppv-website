@@ -1,0 +1,7 @@
+*
+!frontend/**
+!REGLEMENT-OFFICIEL-PPV-2026.pdf
+!backend/**
+!db/**
+!docker-compose.yml
+!requirements.md

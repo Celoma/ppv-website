@@ -38,7 +38,7 @@ app.get('/api/users', async (_req, res) => {
 });
 
 app.post('/api/users', async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
   if (!name || typeof name !== 'string') {
     return res.status(400).json({ message: 'name is required' });
   }
@@ -47,10 +47,14 @@ app.post('/api/users', async (req, res) => {
     return res.status(400).json({ message: 'email is required' });
   }
 
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ message: 'password is required' });
+  }
+
   try {
     const result = await pool.query(
-      'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id, name, email, created_at',
-      [name, email]
+      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
+      [name, email, password]
     );
     return res.status(201).json(result.rows[0]);
   } catch (error) {
