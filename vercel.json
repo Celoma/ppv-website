@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
-  "outputDirectory": "frontend",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
-    }
-  ]
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
