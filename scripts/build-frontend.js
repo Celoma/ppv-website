@@ -4,25 +4,25 @@ const path = require('path');
 const sourceDir = path.join(__dirname, '..', 'frontend');
 const outputDir = path.join(__dirname, '..', 'dist');
 
-function copyRecursive(source, target) {
-  const stats = fs.statSync(source);
+fs.rmSync(outputDir, { recursive: true, force: true });
 
-  if (stats.isDirectory()) {
-    fs.mkdirSync(target, { recursive: true });
-    for (const entry of fs.readdirSync(source)) {
-      if (entry === 'dist') {
-        continue;
-      }
+const staticEntries = ['index.html', 'page2.html', 'assets', 'content'];
 
-      copyRecursive(path.join(source, entry), path.join(target, entry));
-    }
-    return;
+for (const entry of staticEntries) {
+  const sourcePath = path.join(sourceDir, entry);
+  if (!fs.existsSync(sourcePath)) {
+    continue;
   }
 
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(source, target);
+  const targetPath = path.join(outputDir, entry);
+  const stats = fs.statSync(sourcePath);
+
+  if (stats.isDirectory()) {
+    fs.cpSync(sourcePath, targetPath, { recursive: true });
+  } else {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
 }
 
-fs.rmSync(outputDir, { recursive: true, force: true });
-copyRecursive(sourceDir, outputDir);
 console.log(`Copied ${sourceDir} -> ${outputDir}`);
