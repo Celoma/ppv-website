@@ -5,13 +5,16 @@ dotenv.config();
 
 // Support pour Prisma Postgres (DATABASE_URL) ou configuration individuelle
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.PRISMA_DATABASE_URL;
+const isLocalDatabaseUrl = /localhost|127\.0\.0\.1|\bdb\b/i.test(databaseUrl || '');
+const shouldUseSsl = Boolean(databaseUrl) && !isLocalDatabaseUrl;
 
 let pool;
 
 if (databaseUrl) {
   // Utiliser l'URL de connexion complète (Prisma Postgres)
   pool = new Pool({
-    connectionString: databaseUrl
+    connectionString: databaseUrl,
+    ssl: shouldUseSsl ? { rejectUnauthorized: false } : false
   });
 } else {
   // Utiliser la configuration individuelle (Docker local)

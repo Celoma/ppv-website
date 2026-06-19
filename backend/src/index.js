@@ -1,16 +1,38 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const promClient = require('prom-client');
 const { pool, ready } = require('./db');
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const openaiApiKey = process.env.OPENAI_API_KEY;
+const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const ollamaApiKey = process.env.OLLAMA_API_KEY;
 const useOpenAI = process.env.USE_OPENAI === 'true' || openaiApiKey;
 const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register, prefix: 'ppv_' });
+
+register.setDefaultLabels({ service: 'ppv-backend' });
+
+const httpRequestDurationSeconds = new promClient.Histogram({
+  name: 'ppv_http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.05, 0.1, 0.25, 0.5, 1, 2, 5],
+  registers: [register]
+});
+
+const httpRequestsTotal = new promClient.Counter({
+  name: 'ppv_http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
 
 function createAuthToken(user) {
   return jwt.sign(
@@ -43,6 +65,33 @@ function requireAuth(req, res) {
 
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  if (req.path === '/metrics') {
+    return next();
+  }
+
+  const endTimer = httpRequestDurationSeconds.startTimer();
+
+  res.on('finish', () => {
+    const route = req.route?.path || req.path || 'unknown';
+    const labels = {
+      method: req.method,
+      route,
+      status_code: String(res.statusCode)
+    };
+
+    httpRequestsTotal.inc(labels);
+    endTimer(labels);
+  });
+
+  return next();
+});
+
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.send(await register.metrics());
+});
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -158,7 +207,7 @@ app.post('/api/ollama/chat', async (req, res) => {
           'Authorization': `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: model === 'llama3.2:1b' ? 'gpt-3.5-turbo' : model,
+          model: openaiModel,
           messages,
           stream: Boolean(stream)
         })

@@ -1,88 +1,139 @@
-# PPV Website - Configuration Vercel
+# PPV Website - Documentation technique
 
-## Problèmes résolus pour le déploiement Vercel
+Ce projet contient une petite application web avec :
+- un **frontend** en HTML/CSS/JS servi par Nginx,
+- un **backend** en Node.js / Express,
+- une base **PostgreSQL**,
+- **Ollama** pour faire tourner le chatbot en local.
 
-### 1. URL Backend
-- **Problème** : L'URL du backend était hardcoded en `http://localhost:4000/api`
-- **Solution** : Modifié pour utiliser une URL relative `/api` en production et localhost en développement
+Le projet contient aussi une partie **monitoring** avec **Prometheus** et **Grafana**.
 
-### 2. Service IA (Ollama → OpenAI)
-- **Problème** : Ollama est un service local qui ne fonctionne pas sur Vercel
-- **Solution** : Remplacé par OpenAI API qui fonctionne en cloud
+Le projet est pensé pour être démarré facilement avec **Docker Compose**.
 
-### 3. Base de données PostgreSQL
-- **Problème** : PostgreSQL local via Docker ne fonctionne pas sur Vercel
-- **Solution** : Nécessite une base de données cloud (voir configuration ci-dessous)
+## Architecture
 
-## Configuration requise pour Vercel
-
-### Variables d'environnement à configurer dans Vercel
-
-Allez dans votre dashboard Vercel → Settings → Environment Variables et ajoutez :
-
-```
-DATABASE_URL=votre_database_url_de_prisma_postgres
-JWT_SECRET=votre_secret_jwt
+```mermaid
+flowchart LR
+  U[Utilisateur] --> F[Frontend Nginx]
+  F --> B[Backend Node.js / Express]
+  B --> D[(PostgreSQL)]
+  B --> O[Ollama]
 ```
 
-**Pour obtenir DATABASE_URL :**
-1. Allez dans votre dashboard Vercel → Storage → prisma-postgres-claret-pillow
-2. Cliquez sur ".env.local" dans la section Quickstart
-3. Copiez la valeur de `DATABASE_URL` (cliquez sur "Show secret" puis "Copy Snippet")
+### Services Docker
 
-### Options de base de données cloud
+- **frontend** : sert `index.html` et `page2.html` sur le port `3000`.
+- **backend** : expose l'API sur le port `4000`.
+- **db** : héberge PostgreSQL sur le port `5432`.
+- **ollama** : fournit le modèle IA sur le port `11434`.
+- **ollama-pull** : télécharge automatiquement le modèle `llama3.2:1b`.
+- **cadvisor** : remonte l'état et l'utilisation des conteneurs Docker.
+- **postgres-exporter** : expose les métriques PostgreSQL.
+- **prometheus** : collecte les métriques sur le port `9090`.
+- **grafana** : affiche les tableaux de bord sur le port `3001`.
 
-Choisissez l'une de ces options pour PostgreSQL :
+## Réseau et communication
 
-1. **Vercel Postgres** (recommandé pour Vercel)
-   - Allez dans Vercel Dashboard → Storage → Create Database
-   - Sélectionnez Postgres
-   - Copiez les variables d'environnement fournies
+Tous les conteneurs sont sur le même réseau Docker créé par Compose.
+Les services se parlent avec leurs noms internes :
+- `db` pour PostgreSQL,
+- `ollama` pour le service IA,
+- `backend` pour l'API.
 
-2. **Supabase**
-   - Créez un compte sur https://supabase.com
-   - Créez un nouveau projet
-   - Récupérez les credentials dans Settings → Database
+Prometheus interroge aussi `cadvisor`, `postgres-exporter` et le backend Node.js.
 
-3. **Neon**
-   - Créez un compte sur https://neon.tech
-   - Créez un nouveau projet
-   - Récupérez la connection string
+## Ports exposés
 
-### Clé API OpenAI
+- Frontend : `http://localhost:3000`
+- Backend : `http://localhost:4000`
+- PostgreSQL : `localhost:5432`
+- Ollama : `http://localhost:11434`
+- Prometheus : `http://localhost:9090`
+- Grafana : `http://localhost:3001`
 
-1. Allez sur https://platform.openai.com/api-keys
-2. Créez une nouvelle clé API
-3. Ajoutez-la comme variable d'environnement `OPENAI_API_KEY` dans Vercel
+## Persistance des données
 
-### Authentification JWT
+Deux volumes Docker sont utilisés :
 
-1. Ajoutez une valeur longue et aléatoire pour `JWT_SECRET` dans Vercel
-2. Cette clé sert à signer les tokens renvoyés par `/api/login` et `/api/users`
-3. Le chat `/api/ollama/chat` vérifie ce token avant d'accepter une requête
+- `postgres_data` : conserve les données PostgreSQL.
+- `ollama_data` : conserve les modèles téléchargés par Ollama.
+- `backend_node_modules` : évite de réinstaller les dépendances Node à chaque redémarrage.
+- `prometheus_data` : conserve les données Prometheus.
+- `grafana_data` : conserve les tableaux de bord Grafana.
 
-## Initialisation de la base de données
+## Initialisation de la base
 
-Après avoir configuré votre base de données cloud, exécutez le script d'initialisation :
+Au démarrage, le fichier `db/init.sql` crée la table `users` si elle n'existe pas déjà.
+
+## Variables d'environnement
+
+Le projet utilise les variables suivantes :
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `OLLAMA_BASE_URL`
+- `OPENAI_API_KEY` (optionnel)
+- `OPENAI_MODEL` (optionnel)
+- `JWT_SECRET` (recommandé)
+- `JWT_EXPIRES_IN` (optionnel)
+- `PORT`
+
+En local, elles peuvent être mises dans le fichier `.env`.
+
+## Lancer le projet
 
 ```bash
-# Connectez-vous à votre base de données cloud et exécutez le fichier db/init.sql
-# Ou utilisez l'interface web de votre provider pour exécuter le SQL
+docker compose up --build
 ```
 
-Le fichier `db/init.sql` contient la structure de la table users nécessaire.
+## Fonctionnement
 
-## Déploiement
+### Authentification
 
-1. Poussez vos changements sur Git
-2. Connectez votre repository à Vercel
-3. Vercel détectera automatiquement la configuration via `vercel.json`
-4. Configurez les variables d'environnement
-5. Déployez
+- `POST /api/login` : connexion d'un utilisateur
+- `POST /api/users` : création d'un compte
+- Les réponses renvoient un token JWT
 
-## Vérification
+### Base de données
 
-Après déploiement, vérifiez :
-- L'endpoint `/api/health` devrait retourner `{ status: 'ok' }`
-- L'inscription/connexion devrait fonctionner
-- L'assistant IA devrait répondre aux questions
+- `GET /api/health` : vérifie que PostgreSQL répond
+- `GET /api/users` : liste les utilisateurs
+
+### Chatbot
+
+- `POST /api/ollama/chat` : envoie une question au modèle IA
+- Le frontend récupère le token JWT et l'envoie au backend
+
+### Monitoring Grafana
+
+Le tableau de bord Grafana affiche :
+
+- l'état des conteneurs Docker,
+- l'utilisation CPU,
+- l'utilisation mémoire,
+- les métriques PostgreSQL,
+- les performances générales de l'application.
+
+Grafana est accessible sur `http://localhost:3001` avec `admin / admin`.
+
+## Organisation des fichiers
+
+- `frontend/` : pages HTML et assets statiques
+- `backend/` : serveur Node.js
+- `api/` : fonctions Vercel
+- `db/` : script SQL d'initialisation
+- `monitoring/` : configuration Prometheus et Grafana
+- `docker-compose.yml` : orchestration complète
+
+## Remarque
+
+Cette version du projet est volontairement simple pour servir de support de cours Docker :
+- un frontend statique,
+- une API backend,
+- une base PostgreSQL,
+- un service IA local.
+
+Le but est de montrer le fonctionnement des conteneurs, des volumes et des échanges entre services.

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const openaiApiKey = process.env.OPENAI_API_KEY;
+const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const ollamaApiKey = process.env.OLLAMA_API_KEY;
 const useOpenAI = process.env.USE_OPENAI === 'true' || openaiApiKey;
@@ -60,7 +61,7 @@ export default async function handler(req, res) {
           'Authorization': `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: model === 'llama3.2:1b' ? 'gpt-3.5-turbo' : model,
+          model: openaiModel,
           messages,
           stream: Boolean(stream)
         })
