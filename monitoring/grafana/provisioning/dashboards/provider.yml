@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: PPV
+    orgId: 1
+    folder: PPV
+    type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/definitions

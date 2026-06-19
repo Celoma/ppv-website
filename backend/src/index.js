@@ -1,13 +1,57 @@
 const express = require('express');
 const cors = require('cors');
+const client = require('prom-client');
 const { pool } = require('./db');
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 
+client.collectDefaultMetrics();
+
+const httpRequestsTotal = new client.Counter({
+  name: 'ppv_http_requests_total',
+  help: 'Total number of HTTP requests received by the backend',
+  labelNames: ['method', 'route', 'status']
+});
+
+const httpRequestDurationSeconds = new client.Histogram({
+  name: 'ppv_http_request_duration_seconds',
+  help: 'HTTP request duration in seconds for the backend',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5]
+});
+
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const startTime = process.hrtime.bigint();
+
+  res.on('finish', () => {
+    const durationSeconds = Number(process.hrtime.bigint() - startTime) / 1e9;
+    const route = req.route?.path || req.path || 'unknown';
+
+    httpRequestsTotal.inc({
+      method: req.method,
+      route,
+      status: String(res.statusCode)
+    });
+
+    httpRequestDurationSeconds.observe({
+      method: req.method,
+      route,
+      status: String(res.statusCode)
+    }, durationSeconds);
+  });
+
+  next();
+});
+
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.send(await client.register.metrics());
+});
 
 app.get('/api/health', async (_req, res) => {
   try {

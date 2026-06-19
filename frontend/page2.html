@@ -115,6 +115,11 @@
         gap: 12px;
       }
 
+      .actions.stack {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
       .button {
         display: inline-flex;
         align-items: center;
@@ -150,6 +155,178 @@
         flex-direction: column;
         gap: 12px;
         min-height: 0;
+      }
+
+      .monitoring {
+        display: flex;
+        border-radius: 0 0 18px 0;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .monitoring-shell {
+        display: grid;
+        gap: 12px;
+        min-height: 0;
+      }
+
+      .monitor-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .monitor-tab {
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--text);
+        box-shadow: none;
+      }
+
+      .monitor-tab.is-active {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #fff;
+        border-color: transparent;
+      }
+
+      .monitor-section {
+        display: none;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .monitor-section.is-active {
+        display: grid;
+      }
+
+      .monitor-section.compact {
+        gap: 12px;
+      }
+
+      .monitoring.hidden,
+      .chat.hidden {
+        display: none;
+      }
+
+      .monitor-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .monitor-title {
+        margin: 0;
+        font-size: 1.06rem;
+      }
+
+      .monitor-subtitle {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .monitor-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        grid-auto-rows: 110px;
+      }
+
+      .stat-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 12px 13px;
+        background: rgba(255, 255, 255, 0.78);
+        display: grid;
+        gap: 6px;
+        height: 100%;
+        min-height: 110px;
+        align-content: center;
+        overflow: hidden;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.84rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .stat-value {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .stat-note {
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.4;
+      }
+
+      .prom-query-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .prom-query {
+        padding: 12px 13px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.78);
+        display: grid;
+        gap: 8px;
+      }
+
+      .prom-query code {
+        display: block;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #0f172a;
+        font-size: 0.84rem;
+      }
+
+      .prom-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .grafana-frame {
+        width: 100%;
+        height: 420px;
+        min-height: 420px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(65, 86, 192, 0.12);
+        color: #334155;
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
       }
 
       .regle {
@@ -326,13 +503,14 @@
           <p>
             Le PDF original est disponible au téléchargement.
           </p>
-          <div class="actions">
+          <div class="actions stack">
             <a class="button primary" href="./assets/REGLEMENT-OFFICIEL-PPV-2026.pdf" download>Télécharger le règlement</a>
+            <button class="button secondary" type="button" id="toggle-monitoring">Afficher Grafana</button>
             <a class="button secondary" href="./index.html">Se déconnecter</a>
           </div>
         </article>
 
-        <article class="card chat">
+        <article class="card chat" id="chat-panel">
           <h2>Assistant PPV</h2>
           <p id="assistant-description">Pose une question sur les règles, les coups spéciaux ou le déroulé d'une partie.</p>
           <div id="messages" class="messages" aria-live="polite"></div>
@@ -351,10 +529,69 @@
             </div>
           </form>
         </article>
+
+        <article class="card monitoring hidden" id="monitoring-panel">
+          <div class="monitoring-shell">
+            <div class="monitor-header">
+              <div>
+                <p class="eyebrow">Supervision</p>
+                <h2 class="monitor-title">Logs, métriques et tableaux de bord</h2>
+                <p class="monitor-subtitle">Bascule entre une vue rapide, Grafana pour les logs et Prometheus pour les métriques du backend.</p>
+              </div>
+              <div class="status-badge"><span class="status-dot" aria-hidden="true"></span>Monitoring actif</div>
+            </div>
+
+            <div class="monitor-tabs" role="tablist" aria-label="Navigation supervision">
+              <button class="button monitor-tab is-active" type="button" data-monitor-target="overview">Vue rapide</button>
+              <button class="button monitor-tab" type="button" data-monitor-target="grafana">Grafana</button>
+            </div>
+
+            <section class="monitor-section is-active compact" data-monitor-section="overview">
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span class="stat-label">Grafana</span>
+                  <span class="stat-value">http://localhost:3001</span>
+                  <span class="stat-note">Tableaux de bord et logs Docker centralisés.</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Prometheus</span>
+                  <span class="stat-value">http://localhost:9090</span>
+                  <span class="stat-note">Scrape le backend sur /metrics toutes les 15 secondes.</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Loki</span>
+                  <span class="stat-value">Collecte des logs</span>
+                  <span class="stat-note">Réception des logs Docker via Promtail.</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Backend</span>
+                  <span class="stat-value">/metrics</span>
+                  <span class="stat-note">Expose les compteurs HTTP et la latence des requêtes.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="monitor-section" data-monitor-section="grafana">
+              <iframe
+                class="grafana-frame"
+                id="grafana-frame"
+                title="Dashboard Grafana PPV"
+                src="http://localhost:3001/d/ppv-logs/ppv-logs?orgId=1&kiosk&refresh=30s"
+                scrolling="no"
+                loading="lazy"
+              ></iframe>
+            </section>
+          </div>
+        </article>
       </section>
     </main>
 
     <script>
+      const toggleMonitoringButton = document.getElementById('toggle-monitoring');
+      const chatPanel = document.getElementById('chat-panel');
+      const monitoringPanel = document.getElementById('monitoring-panel');
+      const monitorTabs = [...document.querySelectorAll('[data-monitor-target]')];
+      const monitorSections = [...document.querySelectorAll('[data-monitor-section]')];
       const messagesEl = document.getElementById('messages');
       const formEl = document.getElementById('chat-form');
       const questionEl = document.getElementById('question');
@@ -367,6 +604,31 @@
       const contextFiles = ['./content/ppv-rules.txt', './content/ppv-context.txt'];
       const apiBaseUrl = window.location.port === '5500' ? 'http://localhost:4000' : '';
       let systemContext = '';
+      let monitoringVisible = false;
+      let activeMonitorSection = 'overview';
+
+      function setMonitorSection(sectionName) {
+        activeMonitorSection = sectionName;
+
+        monitorTabs.forEach((button) => {
+          const isActive = button.dataset.monitorTarget === sectionName;
+          button.classList.toggle('is-active', isActive);
+        });
+
+        monitorSections.forEach((section) => {
+          section.classList.toggle('is-active', section.dataset.monitorSection === sectionName);
+        });
+      }
+
+      function setMonitoringView(isVisible) {
+        monitoringVisible = isVisible;
+        chatPanel.classList.toggle('hidden', isVisible);
+        monitoringPanel.classList.toggle('hidden', !isVisible);
+        toggleMonitoringButton.textContent = isVisible ? 'Afficher l\'assistant' : 'Afficher Grafana';
+        if (isVisible) {
+          setMonitorSection(activeMonitorSection);
+        }
+      }
 
       function setLoading(isLoading) {
         loadingEl.hidden = !isLoading;
@@ -490,6 +752,18 @@
         }
       });
 
+      toggleMonitoringButton.addEventListener('click', () => {
+        setMonitoringView(!monitoringVisible);
+      });
+
+      monitorTabs.forEach((button) => {
+        button.addEventListener('click', () => {
+          setMonitorSection(button.dataset.monitorTarget);
+        });
+      });
+
+      setMonitoringView(false);
+      setMonitorSection('overview');
       loadContext().then(() => {
         renderMessage('assistant', 'Bonjour, je peux t\'aider avec le règlement PPV. Pose ta question.');
       });
