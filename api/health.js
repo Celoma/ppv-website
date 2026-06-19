@@ -1,4 +1,4 @@
-const { pool } = require('../backend/src/db');
+const { pool, ready } = require('../backend/src/db');
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,6 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await ready;
     await pool.query('SELECT 1');
     res.json({ status: 'ok' });
   } catch (error) {

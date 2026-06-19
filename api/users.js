@@ -1,4 +1,4 @@
-const { pool } = require('../backend/src/db');
+const { pool, ready } = require('../backend/src/db');
 const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
@@ -19,6 +19,7 @@ function createAuthToken(user) {
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
+      await ready;
       const result = await pool.query('SELECT id, name, email, created_at FROM users ORDER BY id');
       res.json(result.rows);
     } catch (error) {
@@ -40,6 +41,7 @@ export default async function handler(req, res) {
     }
 
     try {
+      await ready;
       const result = await pool.query(
         'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
         [name, email, password]

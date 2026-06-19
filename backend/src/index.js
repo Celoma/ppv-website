@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { pool } = require('./db');
+const { pool, ready } = require('./db');
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -46,6 +46,7 @@ app.use(express.json());
 
 app.get('/api/health', async (_req, res) => {
   try {
+    await ready;
     await pool.query('SELECT 1');
     res.json({ status: 'ok' });
   } catch (error) {
@@ -55,6 +56,7 @@ app.get('/api/health', async (_req, res) => {
 
 app.get('/api/users', async (_req, res) => {
   try {
+    await ready;
     const result = await pool.query('SELECT id, name, email, created_at FROM users ORDER BY id');
     res.json(result.rows);
   } catch (error) {
@@ -77,6 +79,7 @@ app.post('/api/users', async (req, res) => {
   }
 
   try {
+    await ready;
     const result = await pool.query(
       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
       [name, email, password]
@@ -104,6 +107,7 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
+    await ready;
     const result = await pool.query(
       'SELECT id, name, email, created_at FROM users WHERE email = $1 AND password = $2 LIMIT 1',
       [email, password]

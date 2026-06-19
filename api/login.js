@@ -1,4 +1,4 @@
-const { pool } = require('../backend/src/db');
+const { pool, ready } = require('../backend/src/db');
 const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
@@ -32,6 +32,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await ready;
     const result = await pool.query(
       'SELECT id, name, email, created_at FROM users WHERE email = $1 AND password = $2 LIMIT 1',
       [email, password]

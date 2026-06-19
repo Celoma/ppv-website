@@ -24,4 +24,20 @@ if (databaseUrl) {
   });
 }
 
-module.exports = { pool };
+async function ensureSchema() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      password TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query('CREATE INDEX IF NOT EXISTS users_email_idx ON users (email)');
+}
+
+const ready = ensureSchema();
+
+module.exports = { pool, ready };
