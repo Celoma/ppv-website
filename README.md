@@ -22,7 +22,6 @@ Allez dans votre dashboard Vercel → Settings → Environment Variables et ajou
 
 ```
 DATABASE_URL=votre_database_url_de_prisma_postgres
-OPENAI_API_KEY=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
 ```
 
 **Pour obtenir DATABASE_URL :**
