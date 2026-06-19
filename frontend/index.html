@@ -276,7 +276,9 @@
       }
     </style>
     <script>
-      const apiUrl = 'http://localhost:4000/api';
+      const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000/api'
+        : '/api';
 
       document.addEventListener('DOMContentLoaded', () => {
         const form = document.querySelector('#login-form');
@@ -332,6 +334,10 @@
               throw new Error(data.message || 'Connexion impossible');
             }
 
+            if (data.token) {
+              localStorage.setItem('ppv-auth-token', data.token);
+            }
+
             window.location.href = './page2.html';
           } catch (error) {
             status.className = 'status error';
@@ -363,6 +369,10 @@
 
             if (!response.ok) {
               throw new Error(data.message || 'Création impossible');
+            }
+
+            if (data.token) {
+              localStorage.setItem('ppv-auth-token', data.token);
             }
 
             window.location.href = './page2.html';

@@ -506,7 +506,7 @@
           <div class="actions stack">
             <a class="button primary" href="./assets/REGLEMENT-OFFICIEL-PPV-2026.pdf" download>Télécharger le règlement</a>
             <button class="button secondary" type="button" id="toggle-monitoring">Afficher Grafana</button>
-            <a class="button secondary" href="./index.html">Se déconnecter</a>
+            <a class="button secondary" href="./index.html" id="logout-link">Se déconnecter</a>
           </div>
         </article>
 
@@ -599,6 +599,12 @@
       const loadingEl = document.getElementById('loading');
       const clearButton = document.getElementById('clear-chat');
       const sendButton = document.getElementById('send-button');
+      const logoutLink = document.getElementById('logout-link');
+
+      const authToken = localStorage.getItem('ppv-auth-token');
+      if (!authToken) {
+        window.location.replace('./index.html');
+      }
 
       const conversation = [];
       const contextFiles = ['./content/ppv-rules.txt', './content/ppv-context.txt'];
@@ -629,6 +635,10 @@
           setMonitorSection(activeMonitorSection);
         }
       }
+
+      logoutLink.addEventListener('click', () => {
+        localStorage.removeItem('ppv-auth-token');
+      });
 
       function setLoading(isLoading) {
         loadingEl.hidden = !isLoading;
@@ -688,7 +698,8 @@
         const response = await fetch(`${apiBaseUrl}/api/ollama/chat`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify({
             model: 'llama3.2:1b',
