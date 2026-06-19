@@ -1,11 +1,35 @@
+const jwt = require('jsonwebtoken');
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const ollamaApiKey = process.env.OLLAMA_API_KEY;
 const useOpenAI = process.env.USE_OPENAI === 'true' || openaiApiKey;
+const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
+
+function requireAuth(req, res) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+
+  if (!token) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return null;
+  }
+
+  try {
+    return jwt.verify(token, jwtSecret);
+  } catch (_error) {
+    res.status(401).json({ message: 'Invalid or expired token' });
+    return null;
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  const authResult = requireAuth(req, res);
+  if (!authResult) {
+    return;
   }
 
   const { model, messages, stream = false } = req.body || {};

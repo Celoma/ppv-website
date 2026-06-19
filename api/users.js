@@ -1,4 +1,20 @@
 const { pool } = require('../backend/src/db');
+const jwt = require('jsonwebtoken');
+
+const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+function createAuthToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      name: user.name
+    },
+    jwtSecret,
+    { expiresIn: jwtExpiresIn }
+  );
+}
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -28,7 +44,8 @@ export default async function handler(req, res) {
         'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
         [name, email, password]
       );
-      return res.status(201).json(result.rows[0]);
+      const user = result.rows[0];
+      return res.status(201).json({ user, token: createAuthToken(user) });
     } catch (error) {
       if (error.code === '23505') {
         return res.status(409).json({ message: 'email already exists' });

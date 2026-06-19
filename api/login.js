@@ -1,4 +1,20 @@
 const { pool } = require('../backend/src/db');
+const jwt = require('jsonwebtoken');
+
+const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+function createAuthToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      name: user.name
+    },
+    jwtSecret,
+    { expiresIn: jwtExpiresIn }
+  );
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,7 +41,8 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    return res.json({ user: result.rows[0] });
+    const user = result.rows[0];
+    return res.json({ user, token: createAuthToken(user) });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

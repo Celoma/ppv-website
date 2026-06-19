@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { pool } = require('./db');
 
 const app = express();
@@ -8,6 +9,37 @@ const openaiApiKey = process.env.OPENAI_API_KEY;
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const ollamaApiKey = process.env.OLLAMA_API_KEY;
 const useOpenAI = process.env.USE_OPENAI === 'true' || openaiApiKey;
+const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'ppv-website-dev-secret';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+function createAuthToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      name: user.name
+    },
+    jwtSecret,
+    { expiresIn: jwtExpiresIn }
+  );
+}
+
+function requireAuth(req, res) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+
+  if (!token) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return null;
+  }
+
+  try {
+    return jwt.verify(token, jwtSecret);
+  } catch (_error) {
+    res.status(401).json({ message: 'Invalid or expired token' });
+    return null;
+  }
+}
 
 app.use(cors());
 app.use(express.json());
@@ -49,7 +81,8 @@ app.post('/api/users', async (req, res) => {
       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
       [name, email, password]
     );
-    return res.status(201).json(result.rows[0]);
+    const user = result.rows[0];
+    return res.status(201).json({ user, token: createAuthToken(user) });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(409).json({ message: 'email already exists' });
@@ -80,13 +113,19 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    return res.json({ user: result.rows[0] });
+    const user = result.rows[0];
+    return res.json({ user, token: createAuthToken(user) });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 });
 
 app.post('/api/ollama/chat', async (req, res) => {
+  const authResult = requireAuth(req, res);
+  if (!authResult) {
+    return;
+  }
+
   const { model, messages, stream = false } = req.body || {};
 
   if (!model || typeof model !== 'string') {

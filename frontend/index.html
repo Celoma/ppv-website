@@ -334,6 +334,10 @@
               throw new Error(data.message || 'Connexion impossible');
             }
 
+            if (data.token) {
+              localStorage.setItem('ppv-auth-token', data.token);
+            }
+
             window.location.href = './page2.html';
           } catch (error) {
             status.className = 'status error';
@@ -365,6 +369,10 @@
 
             if (!response.ok) {
               throw new Error(data.message || 'Création impossible');
+            }
+
+            if (data.token) {
+              localStorage.setItem('ppv-auth-token', data.token);
             }
 
             window.location.href = './page2.html';

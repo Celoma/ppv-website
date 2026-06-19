@@ -22,6 +22,7 @@ Allez dans votre dashboard Vercel → Settings → Environment Variables et ajou
 
 ```
 DATABASE_URL=votre_database_url_de_prisma_postgres
+JWT_SECRET=votre_secret_jwt
 ```
 
 **Pour obtenir DATABASE_URL :**
@@ -53,6 +54,12 @@ Choisissez l'une de ces options pour PostgreSQL :
 1. Allez sur https://platform.openai.com/api-keys
 2. Créez une nouvelle clé API
 3. Ajoutez-la comme variable d'environnement `OPENAI_API_KEY` dans Vercel
+
+### Authentification JWT
+
+1. Ajoutez une valeur longue et aléatoire pour `JWT_SECRET` dans Vercel
+2. Cette clé sert à signer les tokens renvoyés par `/api/login` et `/api/users`
+3. Le chat `/api/ollama/chat` vérifie ce token avant d'accepter une requête
 
 ## Initialisation de la base de données
 
