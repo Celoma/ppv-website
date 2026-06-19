@@ -117,6 +117,8 @@ Le tableau de bord Grafana affiche :
 - les métriques PostgreSQL,
 - les performances générales de l'application.
 
+Remonté des logs
+
 Grafana est accessible sur `http://localhost:3001` avec `admin / admin`.
 
 ## Organisation des fichiers
