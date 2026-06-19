@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const sourceDir = path.join(__dirname, '..', 'frontend');
-const outputDir = path.join(__dirname, '..', 'dist');
+const outputDirs = [
+  path.join(__dirname, '..', 'dist'),
+  path.join(sourceDir, 'dist'),
+];
 
 function copyRecursive(source, target) {
   const stats = fs.statSync(source);
@@ -19,6 +22,8 @@ function copyRecursive(source, target) {
   fs.copyFileSync(source, target);
 }
 
-fs.rmSync(outputDir, { recursive: true, force: true });
-copyRecursive(sourceDir, outputDir);
-console.log(`Copied ${sourceDir} -> ${outputDir}`);
+for (const outputDir of outputDirs) {
+  fs.rmSync(outputDir, { recursive: true, force: true });
+  copyRecursive(sourceDir, outputDir);
+  console.log(`Copied ${sourceDir} -> ${outputDir}`);
+}
