@@ -26,7 +26,7 @@ flowchart LR
 - **backend** : expose l'API sur le port `4000`.
 - **db** : héberge PostgreSQL sur le port `5432`.
 - **ollama** : fournit le modèle IA sur le port `11434`.
-- **ollama-pull** : télécharge automatiquement le modèle `llama3.2:1b`.
+- **ollama-pull** : télécharge automatiquement le modèle `mistral`.
 - **cadvisor** : remonte l'état et l'utilisation des conteneurs Docker.
 - **postgres-exporter** : expose les métriques PostgreSQL.
 - **prometheus** : collecte les métriques sur le port `9090`.

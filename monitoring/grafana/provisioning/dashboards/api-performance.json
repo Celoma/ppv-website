@@ -1,0 +1,40 @@
+{
+  "uid": "ppv-api-performance",
+  "title": "PPV API Performance",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Request Rate",
+      "targets": [
+        {
+          "expr": "rate(ppv_http_requests_total[1m])"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency (avg)",
+      "targets": [
+        {
+          "expr": "rate(ppv_http_request_duration_seconds_sum[1m]) / rate(ppv_http_request_duration_seconds_count[1m])"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency P95",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(ppv_http_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
+    }
+  ]
+}

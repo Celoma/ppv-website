@@ -1,0 +1,28 @@
+{
+  "uid": "postgresql-overview",
+  "title": "PostgreSQL Overview",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "DB Up",
+      "targets": [
+        { "expr": "pg_up" }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 6 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Connections",
+      "targets": [
+        {
+          "expr": "pg_stat_database_numbackends"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 0, "w": 18, "h": 8 }
+    }
+  ]
+}

@@ -530,59 +530,39 @@
           </form>
         </article>
 
-        <article class="card monitoring hidden" id="monitoring-panel">
-          <div class="monitoring-shell">
-            <div class="monitor-header">
-              <div>
-                <p class="eyebrow">Supervision</p>
-                <h2 class="monitor-title">Logs, métriques et tableaux de bord</h2>
-                <p class="monitor-subtitle">Bascule entre une vue rapide, Grafana pour les logs et Prometheus pour les métriques du backend.</p>
-              </div>
-              <div class="status-badge"><span class="status-dot" aria-hidden="true"></span>Monitoring actif</div>
-            </div>
+  <article class="card monitoring hidden" id="monitoring-panel">
+    <div class="monitoring-shell">
 
-            <div class="monitor-tabs" role="tablist" aria-label="Navigation supervision">
-              <button class="button monitor-tab is-active" type="button" data-monitor-target="overview">Vue rapide</button>
-              <button class="button monitor-tab" type="button" data-monitor-target="grafana">Grafana</button>
-            </div>
+      <div class="monitor-header">
+        <div>
+          <p class="eyebrow">Supervision</p>
+          <h2 class="monitor-title">Monitoring système & application</h2>
+          <p class="monitor-subtitle">
+            Docker, CPU, mémoire, PostgreSQL et performance API via Grafana.
+          </p>
+        </div>
 
-            <section class="monitor-section is-active compact" data-monitor-section="overview">
-              <div class="stats-grid">
-                <div class="stat-card">
-                  <span class="stat-label">Grafana</span>
-                  <span class="stat-value">http://localhost:3001</span>
-                  <span class="stat-note">Tableaux de bord et logs Docker centralisés.</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-label">Prometheus</span>
-                  <span class="stat-value">http://localhost:9090</span>
-                  <span class="stat-note">Scrape le backend sur /metrics toutes les 15 secondes.</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-label">Loki</span>
-                  <span class="stat-value">Collecte des logs</span>
-                  <span class="stat-note">Réception des logs Docker via Promtail.</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-label">Backend</span>
-                  <span class="stat-value">/metrics</span>
-                  <span class="stat-note">Expose les compteurs HTTP et la latence des requêtes.</span>
-                </div>
-              </div>
-            </section>
+        <div class="status-badge">
+          <span class="status-dot"></span>Monitoring actif
+        </div>
+      </div>
 
-            <section class="monitor-section" data-monitor-section="grafana">
-              <iframe
-                class="grafana-frame"
-                id="grafana-frame"
-                title="Dashboard Grafana PPV"
-                src="http://localhost:3001/d/ppv-logs/ppv-logs?orgId=1&kiosk&refresh=30s"
-                scrolling="no"
-                loading="lazy"
-              ></iframe>
-            </section>
-          </div>
-        </article>
+      <!-- Tabs dashboards -->
+      <div class="tabs">
+        <button class="button tab active" data-dash="graph">Graphiques</button>
+        <button class="button tab" data-dash="logs">Logs</button>
+      </div>
+
+      <!-- iframe Grafana -->
+    <iframe
+      class="grafana-frame"
+      id="grafana-frame"
+      src="http://localhost:3001/d/ppv-monitoring/ppv-monitoring?orgId=1&from=now-6h&to=now&kiosk&theme=dark&refresh=30s"
+      loading="lazy"
+    ></iframe>
+
+    </div>
+  </article>
       </section>
     </main>
 
@@ -702,7 +682,7 @@
             'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify({
-            model: 'llama3.2:1b',
+            model: 'mistral',
             stream: false,
             messages: [
               { role: 'system', content: systemContext },
@@ -778,6 +758,29 @@
       loadContext().then(() => {
         renderMessage('assistant', 'Bonjour, je peux t\'aider avec le règlement PPV. Pose ta question.');
       });
+
+
+const dashboards = {
+  graph: "http://localhost:3001/d/ppv-monitoring/ppv-monitoring?orgId=1&kiosk&refresh=30s",
+  logs: "http://localhost:3001/d/ppv-logs/ppv-logs?orgId=1&kiosk&refresh=30s"
+};
+const frame = document.getElementById("grafana-frame");
+const tabs = document.querySelectorAll("[data-dash]");
+
+// switch dashboard
+tabs.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.dash;
+    console.log("CLICK DASH =", btn.dataset.dash);
+
+    // update iframe
+    frame.src = dashboards[key];
+
+    // UI active state
+    tabs.forEach(b => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+  });
+});
     </script>
   </body>
 </html>
