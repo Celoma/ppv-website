@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
     container_name: ppv_backend
     restart: unless-stopped
-    command: node src/index.js
+    command: sh -c "npm ci --omit=dev && exec node src/index.js"
     environment:
       PORT: 4000
       DB_HOST: db
@@ -90,10 +90,9 @@ services:
     depends_on:
       - ollama
     restart: "no"
-    entrypoint: ["/bin/sh", "-c"]
-    command: >
-      sleep 10 &&
-      ollama pull mistral
+    entrypoint: ["/bin/sh", "-c", "sleep 10 && ollama pull llama3.2:1b"]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
     volumes:
       - ollama_data:/root/.ollama
 

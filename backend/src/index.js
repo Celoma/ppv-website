@@ -194,7 +194,7 @@ app.post('/api/ollama/chat', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: req.body.model || 'mistral',
+        model: req.body.model || 'llama3.2:1b',
         messages: req.body.messages,
         stream: false
       })
